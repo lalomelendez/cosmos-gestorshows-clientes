@@ -13,14 +13,26 @@ const PORT = process.env.PORT || 5000;
 
 // Configuración de OSC
 const oscPort = new osc.UDPPort({
-  localAddress: "127.0.0.1",
-  localPort: 57121,
+  localAddress: "0.0.0.0",
+  localPort: 57149,
   remoteAddress: "127.0.0.1",
-  remotePort: 57120,
+  remotePort: 57150,
 });
 
 // Abre el puerto OSC
 oscPort.open();
+
+oscPort.on("ready", () => {
+  console.log("OSC Server is ready and listening on port 57121");
+});
+
+oscPort.on("message", (oscMessage) => {
+  console.log("Received OSC message:", oscMessage);
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 // Habilitar CORS
 app.use(cors({ origin: "*" }));
