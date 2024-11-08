@@ -1,34 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const osc = require("osc");
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const showRoutes = require("./routes/showRoutes");
 const photoRoutes = require("./routes/photoRoutes");
+const oscRoutes = require("./routes/oscRoutes"); // Import oscRoutes
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-// OSC Configuration
-const oscPort = new osc.UDPPort({
-  localAddress: "0.0.0.0",
-  localPort: 57149,
-  remoteAddress: "127.0.0.1",
-  remotePort: 57150,
-});
-
-// Open OSC port
-oscPort.open();
-
-oscPort.on("ready", () => {
-  console.log("OSC Server is ready and listening on port 57149");
-});
-
-oscPort.on("message", (oscMessage) => {
-  console.log("Received OSC message:", oscMessage);
-});
 
 // Enable CORS
 app.use(cors({ origin: "*" }));
@@ -46,6 +27,7 @@ connectDB()
     app.use("/api/users", userRoutes);
     app.use("/api/shows", showRoutes);
     app.use("/api/photos", photoRoutes);
+    app.use("/api/osc", oscRoutes); // Add the OSC routes
 
     // HTML Page Routes
     app.get("/create-user", (req, res) => {
@@ -66,35 +48,6 @@ connectDB()
 
     app.get("/show-playback", (req, res) => {
       res.sendFile(path.join(__dirname, "public/html/showPlayback.html"));
-    });
-
-    // Route to send OSC "play" message
-    app.post("/api/osc/play", (req, res) => {
-      oscPort.send({
-        address: "/play",
-        args: [{ type: "i", value: 1 }],
-      });
-      res.status(200).json({ message: "OSC /play message sent successfully" });
-    });
-
-    // Route to send user information as JSON over OSC
-    app.post("/api/osc/send-users", (req, res) => {
-      const { users } = req.body;
-
-      users.forEach((user) => {
-        oscPort.send({
-          address: "/user",
-          args: [
-            { type: "s", value: user.name },
-            { type: "s", value: user.email },
-            { type: "s", value: user.energy },
-            { type: "s", value: user.element },
-            { type: "s", value: user.essence },
-          ],
-        });
-      });
-
-      res.status(200).json({ message: "User information sent via OSC" });
     });
 
     // Handle 404 errors

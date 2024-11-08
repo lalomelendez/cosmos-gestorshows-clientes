@@ -1,3 +1,25 @@
+// Populate time picker with 15-minute intervals
+function populateTimePicker() {
+  const timePicker = document.getElementById("timePicker");
+  const intervals = ["00", "15", "30", "45"];
+
+  for (let hour = 0; hour < 24; hour++) {
+    const formattedHour = hour.toString().padStart(2, "0");
+    intervals.forEach((minute) => {
+      const timeOption = `${formattedHour}:${minute}`;
+      const option = document.createElement("option");
+      option.value = timeOption;
+      option.textContent = timeOption;
+      timePicker.appendChild(option);
+    });
+  }
+}
+
+// Initialize the time picker on page load
+document.addEventListener("DOMContentLoaded", () => {
+  populateTimePicker();
+});
+
 // Select elements from the DOM
 const createShowForm = document.getElementById("createShowForm");
 const showFormContainer = document.getElementById("showFormContainer");
@@ -10,7 +32,16 @@ createShowForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   // Gather form data
-  const startTime = document.getElementById("startTime").value;
+  const date = document.getElementById("datePicker").value;
+  const time = document.getElementById("timePicker").value;
+
+  if (!date || !time) {
+    message.textContent = "Seleccione una fecha y una hora válidas.";
+    message.classList.add("text-red-500");
+    return;
+  }
+
+  const startTime = `${date}T${time}:00`;
   const duration = 15; // Set default duration to 15 minutes
 
   try {

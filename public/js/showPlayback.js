@@ -43,21 +43,49 @@ async function loadAllShows() {
   }
 }
 
-// Función para enviar la señal OSC de "play"
+// Función para enviar la señal de inicio OSC de /play
 async function sendOscPlaySignal() {
   try {
-    console.log("Enviando señal OSC para iniciar el show.");
-    await fetch("/api/osc/play", {
+    const response = await fetch("http://localhost:5000/api/osc/play", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
-    displayMessage("Señal de inicio enviada correctamente.", "green");
+    if (response.ok) {
+      console.log("Play signal sent successfully.");
+    } else {
+      console.error("Error sending play signal.");
+    }
   } catch (error) {
-    displayMessage("Error al enviar señal de inicio.", "red");
-    console.error("Error en sendOscPlaySignal:", error);
+    console.error("Connection error:", error);
   }
 }
 
+// Función para enviar los detalles de los usuarios asignados
+async function sendUserDetails(showId, clients) {
+  try {
+    const response = await fetch("http://localhost:5000/api/osc/send-users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        showId: showId,
+        users: clients,
+      }),
+    });
+    if (response.ok) {
+      console.log("User details sent successfully.");
+    } else {
+      console.error("Error sending user details.");
+    }
+  } catch (error) {
+    console.error("Connection error while sending user details:", error);
+  }
+}
+
+// Función para actualizar el estado del show
 async function updateShowStatus(showId) {
   try {
     console.log(
@@ -93,27 +121,37 @@ function displayMessage(text, color) {
 
 // Escuchar el clic en el botón Play
 playButton.addEventListener("click", async () => {
-  const selectedShow = showSelect.value;
-  if (!selectedShow) {
-    displayMessage("Por favor selecciona un show.", "red");
+  const selectedShowId = showSelect.value;
+  const clients = JSON.parse(
+    showSelect.selectedOptions[0]?.dataset.clients || "[]"
+  );
+
+  if (!selectedShowId || clients.length === 0) {
+    displayMessage(
+      "Por favor selecciona un show con usuarios asignados.",
+      "red"
+    );
     return;
   }
+
+  // Enviar detalles de los usuarios asignados
+  await sendUserDetails(selectedShowId, clients);
 
   // Enviar la señal de inicio OSC
   await sendOscPlaySignal();
 
   // Cambiar el estado del show a "ha sido reproducido"
-  await updateShowStatus(selectedShow);
+  await updateShowStatus(selectedShowId);
 });
 
 // Escuchar cambios en el selector de show para mostrar los usuarios asignados
 showSelect.addEventListener("change", () => {
-  const selectedShow = showSelect.value;
+  const selectedShowId = showSelect.value;
   const clients = JSON.parse(
     showSelect.selectedOptions[0]?.dataset.clients || "[]"
   );
 
-  if (selectedShow && clients.length > 0) {
+  if (selectedShowId && clients.length > 0) {
     usersAssigned.innerHTML = ""; // Limpiar la lista de usuarios
     clients.forEach((client) => {
       const listItem = document.createElement("li");

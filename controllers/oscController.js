@@ -1,53 +1,74 @@
-const osc = require('osc'); // Ensure osc is required at the top of the file
+const osc = require("osc");
 
 const oscClient = new osc.UDPPort({
-  remoteAddress: "127.0.0.1", // Dirección del servidor OSC de destino
-  remotePort: 57121, // Puerto del servidor OSC
+  localAddress: "127.0.0.1", // Adjusted to your requirements
+  localPort: 57120,
+  remoteAddress: "127.0.0.1", // TouchDesigner IP (localhost)
+  remotePort: 7121, // TouchDesigner listening port
 });
+
 oscClient.open();
 
-// Function to send a constant ping OSC message
-const sendPing = () => {
-  oscClient.send({ address: "/ping", args: [] }, (err) => {
-    if (err) {
-      console.error("Error sending ping:", err);
-    }
-  });
-};
+oscClient.on("ready", () => {
+  console.log("OSC client is ready and sending to TouchDesigner on port 7121");
+});
 
-// Set interval to send ping every 5 seconds
-setInterval(sendPing, 5000);
-
-// Enviar señal de inicio de show (mensaje OSC /play, 1)
+// Function to send play signal
 exports.sendPlaySignal = (req, res) => {
-  oscClient.send({ address: "/play", args: 1 }, (err) => {
-    if (err) {
-      console.error("Error sending play signal:", err);
-      return res.status(500).json({ message: "Error sending play signal" });
+  console.log("sendPlaySignal activated"); // Debug message
+  console.log("Sending /play message with address /play and integer value 1"); // Detailed message
+
+  oscClient.send(
+    { address: "/play", args: [{ type: "i", value: 1 }] },
+    (err) => {
+      if (err) {
+        console.error("Error sending /play:", err);
+        return res.status(500).json({ message: "Error sending play signal" });
+      }
+      console.log("Play signal sent successfully"); // Confirmation message
+      res.status(200).json({ message: "Play signal sent successfully" });
     }
-    res.status(200).json({ message: "Señal de inicio enviada correctamente" });
-  });
+  );
 };
 
-// Enviar detalles de los usuarios asignados en formato JSON
+// Function to send user details in JSON format
 exports.sendUserDetails = (req, res) => {
+  console.log("sendUserDetails activated"); // Debug message
   const { showId, users } = req.body;
-
   if (!showId || !users) {
+    console.error("Invalid input data for sendUserDetails");
     return res.status(400).json({ message: "Invalid input data" });
   }
 
-  oscClient.send({
-    address: "/userDetails",
-    args: [
-      { type: "i", value: showId },
-      { type: "s", value: JSON.stringify(users) }
-    ]
-  }, (err) => {
-    if (err) {
-      console.error("Error sending user details:", err);
-      return res.status(500).json({ message: "Error sending user details" });
+  const userDetails = {
+    showId: showId,
+    users: users.map((user) => ({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      energy: user.energy,
+      element: user.element,
+      essence: user.essence,
+    })),
+  };
+
+  console.log(
+    "Sending /userDetails message:",
+    JSON.stringify(userDetails, null, 2)
+  ); // Detailed message with JSON format
+
+  oscClient.send(
+    {
+      address: "/userDetails",
+      args: [{ type: "s", value: JSON.stringify(userDetails) }],
+    },
+    (err) => {
+      if (err) {
+        console.error("Error sending /userDetails:", err);
+        return res.status(500).json({ message: "Error sending user details" });
+      }
+      console.log("User details sent successfully"); // Confirmation message
+      res.status(200).json({ message: "User details sent successfully" });
     }
-    res.status(200).json({ message: "Detalles de usuarios enviados correctamente" });
-  });
+  );
 };
