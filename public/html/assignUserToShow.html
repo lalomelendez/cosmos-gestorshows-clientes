@@ -10,7 +10,7 @@
     />
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
-  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <body class="bg-gray-100 min-h-screen flex flex-col">
     <!-- Navigation Menu -->
     <nav class="bg-blue-500 text-white py-4 fixed top-0 w-full">
       <div class="container mx-auto flex justify-center space-x-8">
@@ -25,56 +25,34 @@
       </div>
     </nav>
 
-    <!-- Page Content with padding to avoid overlap -->
-    <div class="flex-grow pt-16 flex items-center justify-center">
-      <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-        <h2 class="text-2xl font-semibold text-gray-700 mb-6 text-center">
-          Asignar Usuario a Show
-        </h2>
+    <!-- Page Content -->
+    <div class="pt-16 container mx-auto flex flex-col items-center">
+      <h2 class="text-2xl font-semibold text-gray-700 my-6">
+        Asignar Usuario a Show
+      </h2>
 
-        <!-- Selección de usuario -->
-        <div class="mb-4">
-          <label
-            for="userSelect"
-            class="block text-sm font-medium text-gray-600"
-            >Seleccionar Usuario en Espera</label
-          >
-          <select
-            id="userSelect"
-            class="w-full px-3 py-2 border rounded-lg text-gray-700"
-            required
-          >
-            <!-- Los usuarios serán cargados dinámicamente -->
-          </select>
-        </div>
+      <!-- User Selection Section -->
+      <div
+        id="userContainer"
+        class="flex flex-wrap justify-center gap-4 mb-6"
+      ></div>
 
-        <!-- Selección de show -->
-        <div class="mb-4">
-          <label
-            for="showSelect"
-            class="block text-sm font-medium text-gray-600"
-            >Seleccionar Show</label
-          >
-          <select
-            id="showSelect"
-            class="w-full px-3 py-2 border rounded-lg text-gray-700"
-            required
-          >
-            <!-- Los shows serán cargados dinámicamente -->
-          </select>
-        </div>
+      <!-- Show Selection Section -->
+      <div
+        id="showContainer"
+        class="flex flex-wrap justify-center gap-4 mb-6"
+      ></div>
 
-        <!-- Botón de asignación -->
-        <button
-          id="assignButton"
-          class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Asignar Usuario a Show
-        </button>
+      <!-- Assign Button -->
+      <button
+        id="assignButton"
+        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+      >
+        Asignar Usuario a Show
+      </button>
 
-        <!-- Mensaje de éxito o error -->
-        <p id="message" class="text-center text-sm font-medium mt-4"></p>
-      </div>
+      <!-- Success or Error Message -->
+      <p id="message" class="text-center text-sm font-medium mt-4"></p>
     </div>
 
     <script src="/js/assignUserToShow.js"></script>

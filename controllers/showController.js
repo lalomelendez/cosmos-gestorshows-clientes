@@ -25,6 +25,18 @@ const getShows = async (req, res) => {
       .json({ message: error.message || "Error al obtener los shows" });
   }
 };
+//// Obtener  los shows que han sido creados, pero no reproducidos
+const getAvailableShows = async (req, res) => {
+  try {
+    const shows = await Show.find({ status: "creado" }).populate("clients");
+    res.status(200).json(shows);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al obtener shows disponibles",
+      error: error.message,
+    });
+  }
+};
 
 // Obtener shows por una fecha específica
 const getShowsByDate = async (req, res) => {
@@ -134,6 +146,7 @@ const updateShowStatus = async (req, res) => {
 module.exports = {
   createShow,
   getShows,
+  getAvailableShows,
   getShowsByDate,
   getShowById,
   updateShow,
