@@ -11,7 +11,7 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Configuración de OSC
+// OSC Configuration
 const oscPort = new osc.UDPPort({
   localAddress: "0.0.0.0",
   localPort: 57149,
@@ -19,39 +19,35 @@ const oscPort = new osc.UDPPort({
   remotePort: 57150,
 });
 
-// Abre el puerto OSC
+// Open OSC port
 oscPort.open();
 
 oscPort.on("ready", () => {
-  console.log("OSC Server is ready and listening on port 57121");
+  console.log("OSC Server is ready and listening on port 57149");
 });
 
 oscPort.on("message", (oscMessage) => {
   console.log("Received OSC message:", oscMessage);
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-// Habilitar CORS
+// Enable CORS
 app.use(cors({ origin: "*" }));
 
-// Conectar a la base de datos
+// Connect to the database
 connectDB()
   .then(() => {
-    // Middleware para analizar JSON
+    // Middleware to parse JSON
     app.use(express.json());
 
-    // Middleware para servir archivos estáticos (CSS y JS)
+    // Serve static files (CSS and JS)
     app.use(express.static(path.join(__dirname, "public")));
 
-    // Configurar rutas de la API
+    // Set up API routes
     app.use("/api/users", userRoutes);
     app.use("/api/shows", showRoutes);
     app.use("/api/photos", photoRoutes);
 
-    // Rutas de las páginas HTML
+    // HTML Page Routes
     app.get("/create-user", (req, res) => {
       res.sendFile(path.join(__dirname, "public/html/createUser.html"));
     });
@@ -72,16 +68,16 @@ connectDB()
       res.sendFile(path.join(__dirname, "public/html/showPlayback.html"));
     });
 
-    // Ruta para enviar mensaje OSC de "play"
+    // Route to send OSC "play" message
     app.post("/api/osc/play", (req, res) => {
       oscPort.send({
         address: "/play",
         args: [{ type: "i", value: 1 }],
       });
-      res.status(200).json({ message: "Mensaje OSC /play enviado con éxito" });
+      res.status(200).json({ message: "OSC /play message sent successfully" });
     });
 
-    // Ruta para enviar información de los usuarios en formato JSON por OSC
+    // Route to send user information as JSON over OSC
     app.post("/api/osc/send-users", (req, res) => {
       const { users } = req.body;
 
@@ -98,31 +94,29 @@ connectDB()
         });
       });
 
-      res
-        .status(200)
-        .json({ message: "Información de usuarios enviada por OSC" });
+      res.status(200).json({ message: "User information sent via OSC" });
     });
 
-    // Manejo de errores 404
+    // Handle 404 errors
     app.use((req, res) => {
-      res.status(404).json({ message: "Ruta no encontrada" });
+      res.status(404).json({ message: "Route not found" });
     });
 
-    // Middleware de manejo de errores
+    // Error handling middleware
     app.use((err, req, res, next) => {
-      console.error("Error del servidor:", err.stack);
-      res.status(500).json({ message: "Error en el servidor" });
+      console.error("Server error:", err.stack);
+      res.status(500).json({ message: "Server error" });
     });
 
-    // Iniciar el servidor
+    // Start the server
     const server = app.listen(PORT, () => {
-      console.log(`Servidor en ejecución en http://localhost:${PORT}`);
+      console.log(`Server running at http://localhost:${PORT}`);
     });
 
-    // Exportar la instancia de la app y el servidor para pruebas
+    // Export app and server instances for testing
     module.exports = { app, server };
   })
   .catch((err) => {
-    console.error("Error al conectar a MongoDB:", err.message);
+    console.error("Error connecting to MongoDB:", err.message);
     process.exit(1);
   });
