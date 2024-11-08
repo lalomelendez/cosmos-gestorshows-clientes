@@ -1,51 +1,48 @@
-// /static/js/createShow.js
+// Select elements from the DOM
+const createShowForm = document.getElementById("createShowForm");
+const showFormContainer = document.getElementById("showFormContainer");
+const nextButtonContainer = document.getElementById("nextButtonContainer");
+const nextButton = document.getElementById("nextButton");
+const message = document.getElementById("message");
 
-document
-  .getElementById("showForm")
-  .addEventListener("submit", async function (event) {
-    event.preventDefault();
+// Handle form submission to create a show
+createShowForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
 
-    const startDate = document.getElementById("startDate").value;
-    const startTime = document.getElementById("startTime").value;
-    const duration = document.getElementById("duration").value;
-    const message = document.getElementById("message");
+  // Gather form data
+  const startTime = document.getElementById("startTime").value;
+  const duration = document.getElementById("duration").value;
 
-    // Validar que todos los campos estén completos
-    if (!startDate || !startTime || !duration) {
-      message.textContent = "Por favor, completa todos los campos.";
-      message.className = "error";
-      return;
+  try {
+    // Send request to create the show
+    const response = await fetch("/api/shows", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ startTime, duration }),
+    });
+
+    // If the show is created successfully
+    if (response.ok) {
+      message.textContent = "Show creado exitosamente.";
+      message.classList.add("text-green-500");
+
+      // Hide the show creation form and show the 'Siguiente' button
+      showFormContainer.classList.add("hidden");
+      nextButtonContainer.classList.remove("hidden");
+    } else {
+      const errorData = await response.json();
+      message.textContent = `Error: ${errorData.message}`;
+      message.classList.add("text-red-500");
     }
+  } catch (error) {
+    message.textContent = `Error de conexión: ${error.message}`;
+    message.classList.add("text-red-500");
+  }
+});
 
-    // Crear el objeto de fecha y hora
-    const startDateTime = new Date(`${startDate}T${startTime}:00`);
-
-    // Datos del show
-    const showData = {
-      startTime: startDateTime,
-      duration: parseInt(duration),
-    };
-
-    try {
-      const response = await fetch("/api/shows", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(showData),
-      });
-
-      if (response.ok) {
-        message.textContent = "Show creado exitosamente.";
-        message.className = "success";
-        document.getElementById("showForm").reset();
-      } else {
-        const errorData = await response.json();
-        message.textContent = `Error: ${
-          errorData.message || "No se pudo crear el show."
-        }`;
-        message.className = "error";
-      }
-    } catch (error) {
-      message.textContent = `Error de conexión: ${error.message}`;
-      message.className = "error";
-    }
-  });
+// Redirect to the Assign User to Show page when 'Siguiente' is clicked
+nextButton.addEventListener("click", () => {
+  window.location.href = "/assign-user-to-show";
+});
