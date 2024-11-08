@@ -5,8 +5,12 @@ const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const showRoutes = require("./routes/showRoutes");
 const photoRoutes = require("./routes/photoRoutes");
-const oscRoutes = require("./routes/oscRoutes"); // Import oscRoutes
+const oscRoutes = require("./routes/oscRoutes"); // Correctly import oscRoutes
+
+const User = require("./models/User");
+const osc = require("osc");
 require("dotenv").config();
+require("./controllers/oscController"); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,7 +31,7 @@ connectDB()
     app.use("/api/users", userRoutes);
     app.use("/api/shows", showRoutes);
     app.use("/api/photos", photoRoutes);
-    app.use("/api/osc", oscRoutes); // Add the OSC routes
+    app.use("/api/osc", oscRoutes); // Use oscRoutes here
 
     // HTML Page Routes
     app.get("/create-user", (req, res) => {
@@ -50,6 +54,42 @@ connectDB()
       res.sendFile(path.join(__dirname, "public/html/showPlayback.html"));
     });
 
+    // OSC Listener for receiving messages on port 8150
+    const oscServer = new osc.UDPPort({
+      localAddress: "0.0.0.0",
+      localPort: 8150,
+    });
+
+    oscServer.open();
+
+    oscServer.on("message", async (oscMessage) => {
+      console.log("Received OSC message:", oscMessage);
+
+      // Check if the message address is /cosmos
+      if (oscMessage.address === "/cosmos") {
+        try {
+          const userData = JSON.parse(oscMessage.args[0]);
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(userData.email)) {
+            console.log("Invalid email format:", userData.email);
+            return;
+          }
+
+          const user = new User({
+            name: userData.name,
+            email: userData.email,
+            energy: userData.energy,
+            element: userData.element,
+            essence: userData.essence,
+          });
+          await user.save();
+          console.log("User created successfully:", user);
+        } catch (error) {
+          console.error("Error processing OSC message or creating user:", error);
+        }
+      }
+    });
+
     // Handle 404 errors
     app.use((req, res) => {
       res.status(404).json({ message: "Route not found" });
@@ -64,9 +104,9 @@ connectDB()
     // Start the server
     const server = app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
+      console.log("OSC listener ready on port 8150 for Android tablet messages.");
     });
 
-    // Export app and server instances for testing
     module.exports = { app, server };
   })
   .catch((err) => {

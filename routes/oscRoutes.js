@@ -1,14 +1,15 @@
+// routes/oscRoutes.js
 const express = require("express");
 const router = express.Router();
 const oscController = require("../controllers/oscController");
 
-// Ruta para enviar mensaje OSC de reproducción
+// Route for sending OSC play message
 router.post("/play", (req, res) => {
   console.log("Received /play request"); // Debugging statement
   oscController.sendPlaySignal(req, res);
 });
 
-// Ruta para enviar datos de usuarios asignados
+// Route for sending user details to OSC
 router.post("/send-users", (req, res) => {
   console.log("Received /send-users request"); // Debugging statement
   oscController.sendUserDetails(req, res);
