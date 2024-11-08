@@ -11,7 +11,7 @@ createShowForm.addEventListener("submit", async (event) => {
 
   // Gather form data
   const startTime = document.getElementById("startTime").value;
-  const duration = document.getElementById("duration").value;
+  const duration = 15; // Set default duration to 15 minutes
 
   try {
     // Send request to create the show
