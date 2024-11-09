@@ -14,16 +14,16 @@ oscClient.on("ready", () => {
 
   // Send /ping message every 5 seconds
   setInterval(() => {
-    console.log("Sending /ping message");
+    //console.log("Sending /ping message");
     oscClient.send({ address: "/ping", args: [] }, (err) => {
       if (err) console.error("Error sending /ping:", err);
-      else console.log("/ping message sent");
+      //else console.log("/ping message sent");
     });
   }, 5000);
 });
 
 // Function to send play signal
-exports.sendPlaySignal = (req, res) => {
+const sendPlaySignal = (req, res) => {
   console.log("Sending /play OSC message");
   oscClient.send(
     { address: "/play", args: [{ type: "i", value: 1 }] },
@@ -39,7 +39,7 @@ exports.sendPlaySignal = (req, res) => {
 };
 
 // Function to send user details
-exports.sendUserDetails = (req, res) => {
+const sendUserDetails = (req, res) => {
   const { showId, users } = req.body;
   if (!showId || !users) {
     console.error("Invalid input data");
@@ -47,7 +47,7 @@ exports.sendUserDetails = (req, res) => {
   }
 
   const userDetails = {
-    showId: showId,
+    showId,
     users: users.map((user) => ({
       id: user._id,
       name: user.name,
@@ -74,4 +74,10 @@ exports.sendUserDetails = (req, res) => {
       res.status(200).json({ message: "User details sent successfully" });
     }
   );
+};
+
+// Export all functions
+module.exports = {
+  sendPlaySignal,
+  sendUserDetails,
 };
