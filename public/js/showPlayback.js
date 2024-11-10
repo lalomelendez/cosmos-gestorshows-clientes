@@ -4,16 +4,16 @@ const usersAssigned = document.getElementById("usersAssigned");
 const playButton = document.getElementById("playButton");
 const message = document.getElementById("message");
 
-// Cargar todos los shows al cargar la página
+// Cargar shows que aún no han sido reproducidos al cargar la página
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadAllShows();
+  await loadAvailableShows();
 });
 
-// Función para cargar todos los shows
-async function loadAllShows() {
+// Función para cargar solo los shows que no han sido reproducidos
+async function loadAvailableShows() {
   try {
-    console.log("Cargando todos los shows");
-    const response = await fetch(`/api/shows`);
+    console.log("Cargando shows disponibles");
+    const response = await fetch(`/api/shows/available`); // Updated endpoint to fetch only "created" shows
     const shows = await response.json();
 
     console.log("Shows obtenidos:", shows);
