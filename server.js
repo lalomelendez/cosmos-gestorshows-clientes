@@ -10,7 +10,7 @@ const oscRoutes = require("./routes/oscRoutes"); // Correctly import oscRoutes
 const User = require("./models/User");
 const osc = require("osc");
 require("dotenv").config();
-require("./controllers/oscController"); 
+require("./controllers/oscController");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -54,6 +54,11 @@ connectDB()
       res.sendFile(path.join(__dirname, "public/html/showPlayback.html"));
     });
 
+    // New route for editShow
+    app.get("/edit-show", (req, res) => {
+      res.sendFile(path.join(__dirname, "public/html/editShow.html"));
+    });
+
     // OSC Listener for receiving messages on port 8150
     const oscServer = new osc.UDPPort({
       localAddress: "0.0.0.0",
@@ -85,7 +90,10 @@ connectDB()
           await user.save();
           console.log("User created successfully:", user);
         } catch (error) {
-          console.error("Error processing OSC message or creating user:", error);
+          console.error(
+            "Error processing OSC message or creating user:",
+            error
+          );
         }
       }
     });
@@ -104,7 +112,9 @@ connectDB()
     // Start the server
     const server = app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
-      console.log("OSC listener ready on port 8150 for Android tablet messages.");
+      console.log(
+        "OSC listener ready on port 8150 for Android tablet messages."
+      );
     });
 
     module.exports = { app, server };

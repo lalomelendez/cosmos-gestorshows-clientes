@@ -1,4 +1,5 @@
 const Show = require("../models/Show");
+const User = require("../models/User");
 
 // Crear un nuevo show
 const createShow = async (req, res) => {
@@ -142,6 +143,61 @@ const updateShowStatus = async (req, res) => {
   }
 };
 
+// Function to remove a user from a show and reset their status
+const removeUserFromShow = async (req, res) => {
+  const { id: showId, userId } = req.params;
+  console.log("Attempting to remove user:", userId, "from show:", showId);
+
+  try {
+    const show = await Show.findByIdAndUpdate(
+      showId,
+      { $pull: { clients: userId } },
+      { new: true }
+    );
+
+    if (!show) {
+      console.log("Show not found");
+      return res.status(404).json({ message: "Show not found" });
+    }
+
+    await User.findByIdAndUpdate(userId, { status: "en espera" });
+    console.log("User removed and status reset");
+
+    res
+      .status(200)
+      .json({ message: "User removed from show and status reset" });
+  } catch (error) {
+    console.error("Error in removeUserFromShow:", error);
+    res.status(500).json({ message: "Error removing user from show", error });
+  }
+};
+
+// Function to delete a show and reset the status of all assigned users
+const deleteShowAndResetUsers = async (req, res) => {
+  const { id: showId } = req.params;
+
+  try {
+    const show = await Show.findById(showId);
+
+    if (!show) {
+      return res.status(404).json({ message: "Show not found" });
+    }
+
+    // Reset the status of all users assigned to the show
+    await User.updateMany(
+      { _id: { $in: show.clients } },
+      { status: "en espera" }
+    );
+
+    // Delete the show
+    await Show.findByIdAndDelete(showId);
+
+    res.status(200).json({ message: "Show deleted and user statuses reset" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting show", error });
+  }
+};
+
 // Exportar todas las funciones necesarias
 module.exports = {
   createShow,
@@ -152,4 +208,6 @@ module.exports = {
   updateShow,
   deleteShow,
   updateShowStatus,
+  removeUserFromShow, //nueva func
+  deleteShowAndResetUsers, //nueva func
 };

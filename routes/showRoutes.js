@@ -15,5 +15,11 @@ router.delete("/:id", showController.deleteShow);
 
 // Route for updating show status
 router.patch("/:id/status", showController.updateShowStatus);
+//nuevos cambios
+// Route to remove a user from a show
+router.patch("/:id/remove-user/:userId", showController.removeUserFromShow);
+
+// Route to delete a show
+router.delete("/:id", showController.deleteShowAndResetUsers);
 
 module.exports = router;
