@@ -46,7 +46,7 @@ async function loadAvailableShows() {
 // Función para enviar la señal de inicio OSC de /play
 async function sendOscPlaySignal() {
   try {
-    const response = await fetch("http://localhost:5000/api/osc/play", {
+    const response = await fetch("http://192.168.1.12:5000/api/osc/play", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,16 +65,19 @@ async function sendOscPlaySignal() {
 // Función para enviar los detalles de los usuarios asignados
 async function sendUserDetails(showId, clients) {
   try {
-    const response = await fetch("http://localhost:5000/api/osc/send-users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        showId: showId,
-        users: clients,
-      }),
-    });
+    const response = await fetch(
+      "http://192.168.1.12:5000/api/osc/send-users",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          showId: showId,
+          users: clients,
+        }),
+      }
+    );
     if (response.ok) {
       console.log("User details sent successfully.");
     } else {
