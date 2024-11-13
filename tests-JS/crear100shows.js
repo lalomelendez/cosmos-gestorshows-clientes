@@ -5,7 +5,7 @@ const url = "http://localhost:5000/api/shows";
 const horarioInicio = new Date();
 horarioInicio.setHours(10, 0, 0, 0); // 10:00 AM
 const duracionShow = 15 * 60 * 1000; // 15 minutos en milisegundos
-const cantidadShows = 100;
+const cantidadShows = 5;
 
 // Función para crear un show con el horario especificado
 async function crearShow(horario) {

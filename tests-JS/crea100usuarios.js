@@ -119,4 +119,4 @@ async function crearClientes(cantidad) {
 }
 
 // Ejecuta la función para crear 100 clientes
-crearClientes(100);
+crearClientes(10);

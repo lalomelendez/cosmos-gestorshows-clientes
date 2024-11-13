@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true, // No permitir correos duplicados
+    unique: false, // No permitir correos duplicados
   },
   energy: {
     type: String,
