@@ -14,39 +14,13 @@ oscClient.on("ready", () => {
 
   // Send /ping message every 5 seconds
   setInterval(() => {
+    //console.log("Sending /ping message");
     oscClient.send({ address: "/ping", args: [] }, (err) => {
       if (err) console.error("Error sending /ping:", err);
+      //else console.log("/ping message sent");
     });
   }, 5000);
 });
-
-// Equivalence tables for encoding
-const equivalenceTables = {
-  energy: {
-    lunar: 1,
-    solar: 0,
-  },
-  element: {
-    agua: 0,
-    fuego: 1,
-    tierra: 2,
-    aire: 3,
-  },
-  essence: {
-    jaguar: 0,
-    dalia: 1,
-    colibri: 2,
-    ajolote: 3,
-    estrella: 4,
-    agave: 5,
-    aguila: 6,
-    coyote: 7,
-    flecha: 8,
-    ceiba: 9,
-    pluma: 10,
-    medusa: 11,
-  }
-};
 
 // Function to send play signal
 const sendPlaySignal = (req, res) => {
@@ -64,7 +38,7 @@ const sendPlaySignal = (req, res) => {
   );
 };
 
-// Function to send user details as an encoded array
+// Function to send user details
 const sendUserDetails = (req, res) => {
   const { showId, users } = req.body;
   if (!showId || !users) {
@@ -72,27 +46,24 @@ const sendUserDetails = (req, res) => {
     return res.status(400).json({ message: "Invalid input data" });
   }
 
-  // Encode user details into an array of integers
-  const encodedData = [users.length]; // Start with the number of users
-  users.forEach((user) => {
-    const energyValue = equivalenceTables.energy[user.energy] ?? -1;
-    const elementValue = equivalenceTables.element[user.element] ?? -1;
-    const essenceValue = equivalenceTables.essence[user.essence] ?? -1;
+  const userDetails = {
+    showId,
+    users: users.map((user) => ({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      energy: user.energy,
+      element: user.element,
+      essence: user.essence,
+    })),
+  };
 
-    if (energyValue === -1 || elementValue === -1 || essenceValue === -1) {
-      console.error("Error encoding user details due to invalid value");
-      return res.status(400).json({ message: "Error encoding user details" });
-    }
-
-    encodedData.push(energyValue, elementValue, essenceValue);
-  });
-
-  console.log("Sending /userDetails OSC message with encoded data:", encodedData);
+  console.log("Sending /userDetails OSC message:", JSON.stringify(userDetails));
 
   oscClient.send(
     {
       address: "/userDetails",
-      args: encodedData.map((value) => ({ type: "i", value })),
+      args: [{ type: "s", value: JSON.stringify(userDetails) }],
     },
     (err) => {
       if (err) {

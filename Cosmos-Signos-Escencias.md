@@ -1,22 +1,4 @@
-energy
-    lunar
-    solar
 
-
-
-essence
-    guerrero
-    flor
-    colibri
-    tortuga
-    romboDeFuego
-    maizAzul
-    aguila
-    lagartija
-    flecha
-    maestro
-    arbolDeViento
-    venado
 
 
 

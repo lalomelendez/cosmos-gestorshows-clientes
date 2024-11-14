@@ -50,18 +50,18 @@ const apellidos = [
 const energies = ["lunar", "solar"];
 const elements = ["agua", "fuego", "tierra", "aire"];
 const essences = [
-  "guerrero",
-  "flor",
-  "colibri",
-  "tortuga",
-  "romboDeFuego",
-  "maizAzul",
-  "aguila",
-  "lagartija",
-  "flecha",
-  "maestro",
-  "arbolDeViento",
-  "venado",
+  'jaguar',
+  'dalia',
+  'colibri',
+  'ajolote',
+  'estrella',
+  'agave',
+  'aguila',
+  'coyote',
+  'flecha',
+  'ceiba',
+  'pluma',
+  'medusa',
 ];
 
 // Función para generar un nombre completo aleatorio
