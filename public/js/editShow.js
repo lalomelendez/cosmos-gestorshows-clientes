@@ -47,27 +47,35 @@ showSelect.addEventListener("change", () => {
     showSelect.selectedOptions[0]?.dataset.clients || "[]"
   );
 
-  if (selectedShowId && clients.length > 0) {
-    usersAssigned.innerHTML = ""; // Clear user list
-    clients.forEach((client) => {
-      const listItem = document.createElement("li");
-      listItem.className = "flex justify-between items-center";
-      listItem.textContent = `${client.name} - ${client.email} - ${client.energy} - ${client.element} - ${client.essence}`;
+  // First, clear and hide the users list
+  usersAssigned.innerHTML = "";
+  usersAssigned.classList.add("hidden");
 
-      // Remove button for each user
-      const removeButton = document.createElement("button");
-      removeButton.className = "text-red-500 ml-4";
-      removeButton.textContent = "Eliminar";
-      removeButton.onclick = () =>
-        removeUserFromShow(selectedShowId, client._id);
-
-      listItem.appendChild(removeButton);
-      usersAssigned.appendChild(listItem);
-    });
-    usersAssigned.classList.remove("hidden");
+  // Enable delete button if a show is selected, regardless of clients
+  if (selectedShowId) {
     deleteShowButton.disabled = false;
+
+    // Only show users list if there are clients
+    if (clients.length > 0) {
+      clients.forEach((client) => {
+        const listItem = document.createElement("li");
+        listItem.className = "flex justify-between items-center";
+        listItem.textContent = `${client.name} - ${client.email} - ${client.energy} - ${client.element} - ${client.essence}`;
+
+        // Remove button for each user
+        const removeButton = document.createElement("button");
+        removeButton.className = "text-red-500 ml-4";
+        removeButton.textContent = "Eliminar";
+        removeButton.onclick = () =>
+          removeUserFromShow(selectedShowId, client._id);
+
+        listItem.appendChild(removeButton);
+        usersAssigned.appendChild(listItem);
+      });
+      usersAssigned.classList.remove("hidden");
+    }
   } else {
-    usersAssigned.classList.add("hidden");
+    // No show selected, disable delete button
     deleteShowButton.disabled = true;
   }
 });
@@ -83,6 +91,7 @@ async function removeUserFromShow(showId, userId) {
     if (response.ok) {
       displayMessage("Usuario eliminado del show.", "green");
       await loadAvailableShows(); // Refresh the show list
+      window.location.reload();
     } else {
       console.error("Error al eliminar usuario del show");
       displayMessage("Error al eliminar usuario del show.", "red");
@@ -96,22 +105,30 @@ async function removeUserFromShow(showId, userId) {
 // Function to delete a show
 deleteShowButton.addEventListener("click", async () => {
   const selectedShowId = showSelect.value;
-  if (!selectedShowId) return;
+  console.log("Attempting to delete show:", selectedShowId);
 
   try {
     const response = await fetch(`/api/shows/${selectedShowId}`, {
       method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
-    if (response.ok) {
+    // Handle response without requiring JSON parsing
+    if (response.status === 200) {
+      console.log("Show deleted successfully");
       displayMessage("Show eliminado correctamente.", "green");
-      await loadAvailableShows(); // Refresh the show list
+      showSelect.value = ""; // Reset select
+      usersAssigned.innerHTML = ""; // Clear users list
+      usersAssigned.classList.add("hidden");
+      await loadAvailableShows(); // Refresh shows list
     } else {
-      console.error("Error al eliminar el show.");
+      console.error("Delete failed with status:", response.status);
       displayMessage("Error al eliminar el show.", "red");
     }
   } catch (error) {
-    console.error("Error al eliminar el show:", error);
+    console.error("Delete error:", error);
     displayMessage("Error al eliminar el show.", "red");
   }
 });

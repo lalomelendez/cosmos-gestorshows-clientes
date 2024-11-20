@@ -143,58 +143,71 @@ const updateShowStatus = async (req, res) => {
   }
 };
 
-// Function to remove a user from a show and reset their status
 const removeUserFromShow = async (req, res) => {
   const { id: showId, userId } = req.params;
-  console.log("Attempting to remove user:", userId, "from show:", showId);
-
   try {
-    const show = await Show.findByIdAndUpdate(
-      showId,
-      { $pull: { clients: userId } },
-      { new: true }
-    );
-
+    const show = await Show.findById(showId);
     if (!show) {
-      console.log("Show not found");
       return res.status(404).json({ message: "Show not found" });
     }
 
-    await User.findByIdAndUpdate(userId, { status: "en espera" });
-    console.log("User removed and status reset");
+    show.clients = show.clients.filter(
+      (clientId) => clientId.toString() !== userId
+    );
+    await show.save();
 
-    res
-      .status(200)
-      .json({ message: "User removed from show and status reset" });
+    // Add this explicit user status update
+    await User.findByIdAndUpdate(userId, { status: "en espera" });
+
+    res.status(200).json({ message: "User removed and status updated" });
   } catch (error) {
-    console.error("Error in removeUserFromShow:", error);
-    res.status(500).json({ message: "Error removing user from show", error });
+    res.status(500).json({ message: "Error removing user", error });
   }
 };
 
 // Function to delete a show and reset the status of all assigned users
 const deleteShowAndResetUsers = async (req, res) => {
   const { id: showId } = req.params;
+  console.log("Starting deletion process for show:", showId);
 
   try {
+    // Find show and validate it exists
     const show = await Show.findById(showId);
+    console.log("Found show:", show);
 
     if (!show) {
+      console.log("Show not found");
       return res.status(404).json({ message: "Show not found" });
     }
 
-    // Reset the status of all users assigned to the show
-    await User.updateMany(
-      { _id: { $in: show.clients } },
-      { status: "en espera" }
-    );
+    // Reset status for all users assigned to the show
+    if (show.clients && show.clients.length > 0) {
+      console.log("Updating users:", show.clients);
+      const updateResult = await User.updateMany(
+        { _id: { $in: show.clients } },
+        { status: "en espera" }
+      );
+      console.log("Update result:", updateResult);
+    }
 
     // Delete the show
-    await Show.findByIdAndDelete(showId);
+    const deleteResult = await Show.findByIdAndDelete(showId);
+    console.log("Delete result:", deleteResult);
 
-    res.status(200).json({ message: "Show deleted and user statuses reset" });
+    // Return success response
+    return res.status(200).json({
+      message: "Show deleted and user statuses reset",
+      success: true,
+      deleteResult,
+      show,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting show", error });
+    console.error("Detailed error:", error);
+    return res.status(500).json({
+      message: "Error deleting show",
+      error: error.message,
+      success: false,
+    });
   }
 };
 

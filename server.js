@@ -23,6 +23,10 @@ connectDB()
   .then(() => {
     // Middleware to parse JSON
     app.use(express.json());
+    app.use((err, req, res, next) => {
+      console.error("Express error:", err);
+      res.status(500).json({ error: "Server error" });
+    });
 
     // Serve static files (CSS and JS)
     app.use(express.static(path.join(__dirname, "public")));
