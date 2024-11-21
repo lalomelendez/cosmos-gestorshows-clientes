@@ -45,21 +45,40 @@ const equivalenceTables = {
     ceiba: 9,
     pluma: 10,
     medusa: 11,
-  }
+  },
 };
 
-// Function to send play signal
+// Function to send play signal with language
 const sendPlaySignal = (req, res) => {
-  console.log("Sending /play OSC message");
+  const { language } = req.body;
+
+  // Validate language
+  if (!language || !["en", "es"].includes(language)) {
+    return res.status(400).json({
+      message: 'Invalid language. Must be "en" or "es"',
+    });
+  }
+
+  console.log(`Sending /play OSC message with language: ${language}`);
+
   oscClient.send(
-    { address: "/play", args: [{ type: "i", value: 1 }] },
+    {
+      address: "/play",
+      args: [
+        { type: "i", value: 1 },
+        { type: "s", value: language },
+      ],
+    },
     (err) => {
       if (err) {
         console.error("Error sending /play:", err);
         return res.status(500).json({ message: "Error sending play signal" });
       }
       console.log("Play signal sent successfully");
-      res.status(200).json({ message: "Play signal sent successfully" });
+      res.status(200).json({
+        message: "Play signal sent successfully",
+        language: language,
+      });
     }
   );
 };
@@ -87,7 +106,10 @@ const sendUserDetails = (req, res) => {
     encodedData.push(energyValue, elementValue, essenceValue);
   });
 
-  console.log("Sending /userDetails OSC message with encoded data:", encodedData);
+  console.log(
+    "Sending /userDetails OSC message with encoded data:",
+    encodedData
+  );
 
   oscClient.send(
     {
